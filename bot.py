@@ -2,8 +2,13 @@ import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 import random
 import pyowm
+from pyowm import *
+from pyowm.utils.config import get_default_config
 
-owm = pyowm.OWM('...', language='RU')
+config_dict = get_default_config()
+config_dict['language'] = 'ru'
+owm = pyowm.OWM('...',config_dict)
+mgr=owm.weather_manager()
 token='...'
 def write_msg(user_id, message):
 	random_id = vk_api.utils.get_random_id()
@@ -15,17 +20,17 @@ for event in longpoll.listen():
 		if event.to_me:
 			request = event.text
 			city = request
-			observation = owm.weather_at_place(city)
-			w = observation.get_weather()
-			otvet = 'Погода в городе ' + city.title() + ': ' + w.get_detailed_status()
+			observation = mgr.weather_at_place(city)
+			w = observation.weather
+			otvet = 'Погода в городе ' + city.title() + ': ' + w.detailed_status
 			write_msg(event.user_id, otvet)
-			a = w.get_temperature('celsius')['temp']
+			a = w.temperature('celsius')['temp']
 			otvet = 'Температура: ' + str(a) + ' °C'
 			write_msg(event.user_id, otvet)
-			b = w.get_pressure()
-			bb = w.get_humidity()
+			b = w.pressure
+			bb = w.humidity
 			otvet = 'Давление: ' + str(b['press']) + '; Влажность: ' + str(bb) + ' %'
 			write_msg(event.user_id, otvet)
-			d = w.get_wind()
+			d = w.wind()
 			otvet = 'Ветер: ' + str(d['deg']) + ' °;' + ' Скорость: ' + str(d['speed']) + ' м/c'
 			write_msg(event.user_id, otvet)
